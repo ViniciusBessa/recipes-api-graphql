@@ -1,0 +1,43 @@
+{
+  "name": "recipes_api_graphql",
+  "version": "1.0.0",
+  "description": "Uma API que disponibiliza receitas, ingredients, usuários, categorias e mais. Essa API se baseia em GraphQL, feita em Express com Apollo Server e Prisma.",
+  "main": "server.ts",
+  "scripts": {
+    "test": "npm test",
+    "dev": "tsnd server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ViniciusBessa/recipes-api-graphql.git"
+  },
+  "keywords": [
+    "graphql",
+    "api",
+    "express",
+    "apollo-server",
+    "prisma",
+    "node",
+    "typescript"
+  ],
+  "author": "Vinícius Bessa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ViniciusBessa/recipes-api-graphql/issues"
+  },
+  "homepage": "https://github.com/ViniciusBessa/recipes-api-graphql#readme",
+  "dependencies": {
+    "@prisma/client": "^4.2.1",
+    "apollo-server-express": "^3.10.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "graphql": "^16.6.0",
+    "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^18.7.13",
+    "prisma": "^4.2.1",
+    "ts-node-dev": "^2.0.0"
+  }
+}

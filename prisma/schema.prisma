@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(30)
+  email     String   @unique @db.VarChar(60)
+  password  String
+  role      Role     @default(USER)
+  recipes   Recipe[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Recipe {
+  id          Int                 @id @default(autoincrement())
+  name        String              @unique @db.VarChar(30)
+  description String              @db.VarChar(1000)
+  ingredients RecipeIngredients[]
+  categories  RecipeCategories[]
+  user        User                @relation(fields: [userId], references: [id])
+  userId      Int
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model RecipeIngredients {
+  recipe       Recipe     @relation(fields: [recipeId], references: [id])
+  recipeId     Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId Int
+  quantity     Int
+  assignedAt   DateTime   @default(now())
+
+  @@id([recipeId, ingredientId])
+}
+
+model RecipeCategories {
+  recipe     Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId   Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  assignedAt DateTime @default(now())
+
+  @@id([recipeId, categoryId])
+}
+
+model Ingredient {
+  id        Int                 @id @default(autoincrement())
+  name      String              @unique @db.VarChar(30)
+  recipes   RecipeIngredients[]
+  weightKg  Decimal             @db.Decimal(6, 3)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+model Category {
+  id        Int                @id @default(autoincrement())
+  name      String             @unique @db.VarChar(30)
+  recipes   RecipeCategories[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
