@@ -73,5 +73,6 @@ model Category {
 
 enum Role {
   USER
+  CREATOR
   ADMIN
 }
