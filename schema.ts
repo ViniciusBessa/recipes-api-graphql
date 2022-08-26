@@ -4,34 +4,39 @@ const schema = gql`
   scalar DateTime
 
   type Query {
-    users: [User!]!
-    recipes: [Recipe!]!
-    ingredients: [Ingredient!]!
-    categories: [Category!]!
+    users(id: Int): [User!]!
+    recipes(id: Int): [Recipe!]!
+    ingredients(id: Int): [Ingredient!]!
+    categories(id: Int): [Category!]!
   }
 
   type Mutation {
     # Users mutations
     createUser(input: NewUserInput!): AuthInfo!
-    updateUser(id: ID!, newData: NewUserInput!): User!
-    deleteUser(id: ID!): User!
+    updateUserName(newName: String!): User!
+    updateUserEmail(newEmail: String!): User!
+    updateUserPassword(password: String!, newPassword: String!): User!
+    deleteUser(id: Int!): User!
     loginUser(input: LoginInput!): AuthInfo!
 
     # Recipes Mutations
+    createRecipe(input: NewRecipeInput!): Recipe!
+    updateRecipe(id: Int!, newData: UpdateRecipeInput!): Recipe!
+    deleteRecipe(id: Int!): Recipe!
 
     # Ingredients Mutations
     createIngredient(input: NewIngredientInput!): Ingredient!
-    updateIngredient(id: ID!, newData: NewIngredientInput!): Ingredient!
-    deleteIngredient(id: ID!): Ingredient!
+    updateIngredient(id: Int!, newData: NewIngredientInput!): Ingredient!
+    deleteIngredient(id: Int!): Ingredient!
 
     # Categories Mutations
     createCategory(input: NewCategoryInput!): Category!
-    updateCategory(id: ID!, newData: NewCategoryInput!): Category!
-    deleteCategory(id: ID!): Category!
+    updateCategory(id: Int!, newData: NewCategoryInput!): Category!
+    deleteCategory(id: Int!): Category!
   }
 
   type User {
-    id: ID!
+    id: Int!
     name: String!
     email: String!
     role: Role
@@ -41,18 +46,18 @@ const schema = gql`
   }
 
   type Recipe {
-    id: ID!
+    id: Int!
     name: String!
     description: String
-    ingredients: [Ingredient!]!
-    categories: [Category!]!
+    ingredients: [RecipeIngredient!]!
+    categories: [RecipeCategory!]!
     user: User!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
 
   type Ingredient {
-    id: ID!
+    id: Int!
     name: String!
     weightKg: Float!
     createdAt: DateTime!
@@ -60,7 +65,7 @@ const schema = gql`
   }
 
   type Category {
-    id: ID!
+    id: Int!
     name: String!
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -69,6 +74,22 @@ const schema = gql`
   type AuthInfo {
     user: User!
     token: String!
+  }
+
+  type RecipeIngredient {
+    recipeId: Int!
+    ingredientId: Int!
+    quantity: Int!
+    assignedAt: DateTime!
+    ingredient: Ingredient!
+  }
+
+  type RecipeCategory {
+    recipeId: Int!
+    categoryId: Int!
+    quantity: Int!
+    assignedAt: DateTime!
+    ingredient: Category!
   }
 
   input NewUserInput {
@@ -92,9 +113,26 @@ const schema = gql`
     name: String!
   }
 
+  input NewRecipeInput {
+    name: String!
+    description: String!
+    ingredients: [IngredientQuantity!]!
+    categoriesIds: [Int!]!
+  }
+
+  input UpdateRecipeInput {
+    name: String
+    description: String
+  }
+
+  input IngredientQuantity {
+    ingredientId: Int!
+    quantity: Int!
+  }
+
   enum Role {
     USER
-    CREATOR
+    COOK
     ADMIN
   }
 `;

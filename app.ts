@@ -7,6 +7,7 @@ import {
   ApolloServerPluginLandingPageLocalDefault,
 } from 'apollo-server-core';
 import { Server } from 'http';
+import authenticationMiddleware from './middlewares/authentication';
 
 async function startServer(
   typeDefs: DocumentNode,
@@ -18,6 +19,7 @@ async function startServer(
     typeDefs,
     resolvers,
     csrfPrevention: true,
+    context: ({ req }) => authenticationMiddleware(req),
     cache: 'bounded',
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),

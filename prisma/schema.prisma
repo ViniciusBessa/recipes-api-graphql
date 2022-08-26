@@ -19,6 +19,8 @@ model User {
   recipes   Recipe[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("users")
 }
 
 model Recipe {
@@ -27,31 +29,35 @@ model Recipe {
   description String              @db.VarChar(1000)
   ingredients RecipeIngredients[]
   categories  RecipeCategories[]
-  user        User                @relation(fields: [userId], references: [id])
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
+
+  @@map("recipes")
 }
 
 model RecipeIngredients {
-  recipe       Recipe     @relation(fields: [recipeId], references: [id])
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId     Int
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
   ingredientId Int
   quantity     Int
   assignedAt   DateTime   @default(now())
 
   @@id([recipeId, ingredientId])
+  @@map("recipe_ingredients")
 }
 
 model RecipeCategories {
-  recipe     Recipe   @relation(fields: [recipeId], references: [id])
+  recipe     Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId   Int
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId Int
   assignedAt DateTime @default(now())
 
   @@id([recipeId, categoryId])
+  @@map("recipe_categories")
 }
 
 model Ingredient {
@@ -61,6 +67,8 @@ model Ingredient {
   weightKg  Decimal             @db.Decimal(6, 3)
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
+
+  @@map("ingredients")
 }
 
 model Category {
@@ -69,10 +77,12 @@ model Category {
   recipes   RecipeCategories[]
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
+
+  @@map("categories")
 }
 
 enum Role {
   USER
-  CREATOR
+  COOK
   ADMIN
 }

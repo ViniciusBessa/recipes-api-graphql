@@ -2,7 +2,7 @@ export interface UserPayload {
   id: number;
   name: string;
   email: string;
-  role: 'USER' | 'CREATOR' | 'ADMIN';
+  role: 'USER' | 'COOK' | 'ADMIN';
   createdAt: Date;
   updatedAt: Date;
 }

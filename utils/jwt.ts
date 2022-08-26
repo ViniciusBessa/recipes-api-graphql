@@ -14,10 +14,22 @@ function getUserPayload(user: User): UserPayload {
 }
 
 function generateJWToken(userPayload: UserPayload): string {
-  const token: string = jwt.sign(userPayload, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRES_IN as string,
-  });
+  const token: string = jwt.sign(
+    userPayload,
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN as string,
+    }
+  );
   return token;
 }
 
-export { getUserPayload, generateJWToken };
+function verifyJWToken(token: string): UserPayload {
+  const userPayload: UserPayload = jwt.verify(
+    token,
+    process.env.JWT_SECRET as string
+  ) as UserPayload;
+  return userPayload;
+}
+
+export { getUserPayload, generateJWToken, verifyJWToken };

@@ -32,7 +32,7 @@ async function updateCategory(
   }
   const category = await prisma.category.update({
     where: { id },
-    data: newData,
+    data: { name },
   });
   return category;
 }
