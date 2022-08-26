@@ -1,11 +1,10 @@
 import { User } from '@prisma/client';
 import allowedRoles from '../middlewares/allowed-roles';
 import { LoginInput } from '../models/login-input.model';
-import { NewCategoryInput } from '../models/new-category-input.model';
-import { NewIngredientInput } from '../models/new-ingredient-input.model';
 import { NewRecipeInput } from '../models/new-recipe-input.model';
 import { NewUserInput } from '../models/new-user-input.model';
 import { UpdateRecipeInput } from '../models/update-recipe-input.model';
+import { ReviewInput } from '../models/review-input.model';
 import {
   createCategory,
   deleteCategory,
@@ -13,7 +12,6 @@ import {
   updateCategory,
 } from './categories';
 import {
-  createIngredient,
   deleteIngredient,
   getIngredients,
   updateIngredient,
@@ -25,6 +23,13 @@ import {
   updateRecipe,
 } from './recipes';
 import {
+  createReview,
+  deleteReview,
+  getReviews,
+  updateReview,
+} from './reviews';
+import { deleteStep, getSteps, updateStep } from './steps';
+import {
   getUsers,
   createUser,
   deleteUser,
@@ -33,6 +38,7 @@ import {
   updateUserEmail,
   updateUserPassword,
 } from './users';
+import { IngredientInput } from '../models/ingredient-input.model';
 
 interface Context {
   user: User | null;
@@ -46,6 +52,10 @@ const resolvers = {
 
     ingredients: async (_parent: any, args: { id?: number }) =>
       getIngredients(args.id),
+
+    steps: async (_parent: any, args: { id?: number }) => getSteps(args.id),
+
+    reviews: async (_parent: any, args: { id?: number }) => getReviews(args.id),
 
     categories: async (_parent: any, args: { id?: number }) =>
       getCategories(args.id),
@@ -100,7 +110,7 @@ const resolvers = {
       _parent: any,
       args: { input: NewRecipeInput },
       context: Context
-    ) => createRecipe(args.input, context.user),
+    ) => createRecipe(args.input, context.user!),
 
     updateRecipe: async (
       _parent: any,
@@ -115,21 +125,12 @@ const resolvers = {
     ) => deleteRecipe(args.id, context.user),
 
     // Ingredients Mutations
-    createIngredient: async (
-      _parent: any,
-      args: { input: NewIngredientInput },
-      context: Context
-    ) => {
-      allowedRoles(['ADMIN'], context.user);
-      return createIngredient(args.input);
-    },
-
     updateIngredient: async (
       _parent: any,
-      args: { id: number; newData: NewIngredientInput },
+      args: { id: number; newData: IngredientInput },
       context: Context
     ) => {
-      allowedRoles(['ADMIN'], context.user);
+      allowedRoles(['COOK', 'ADMIN'], context.user);
       return updateIngredient(args.id, args.newData);
     },
 
@@ -138,27 +139,74 @@ const resolvers = {
       args: { id: number },
       context: Context
     ) => {
-      allowedRoles(['ADMIN'], context.user);
+      allowedRoles(['COOK', 'ADMIN'], context.user);
       return deleteIngredient(args.id);
+    },
+
+    // Steps Mutations
+    updateStep: async (
+      _parent: any,
+      args: { id: number; description: string },
+      context: Context
+    ) => {
+      allowedRoles(['COOK', 'ADMIN'], context.user);
+      return updateStep(args.id, args.description);
+    },
+
+    deleteStep: async (
+      _parent: any,
+      args: { id: number },
+      context: Context
+    ) => {
+      allowedRoles(['COOK', 'ADMIN'], context.user);
+      return deleteStep(args.id);
+    },
+
+    // Reviews Mutations
+    createReview: async (
+      _parent: any,
+      args: { recipeId: number; review: ReviewInput },
+      context: Context
+    ) => {
+      allowedRoles(['USER', 'COOK', 'ADMIN'], context.user);
+      return createReview(args.recipeId, args.review, context.user!);
+    },
+
+    updateReview: async (
+      _parent: any,
+      args: { id: number; review: ReviewInput },
+      context: Context
+    ) => {
+      allowedRoles(['USER', 'COOK', 'ADMIN'], context.user);
+      return updateReview(args.id, args.review);
+    },
+
+    deleteReview: async (
+      _parent: any,
+      args: { id: number },
+      context: Context
+    ) => {
+      allowedRoles(['USER', 'COOK', 'ADMIN'], context.user);
+      return deleteReview(args.id);
     },
 
     // Categories Mutations
     createCategory: async (
       _parent: any,
-      args: { input: NewCategoryInput },
+      args: { name: string },
       context: Context
     ) => {
       allowedRoles(['ADMIN'], context.user);
-      return createCategory(args.input);
+      return createCategory(args.name);
     },
 
     updateCategory: async (
       _parent: any,
-      args: { id: number; newData: NewCategoryInput },
+      args: { id: number; newName: string },
       context: Context
     ) => {
       allowedRoles(['ADMIN'], context.user);
-      return updateCategory(args.id, args.newData);
+      return updateCategory(args.id, args.newName);
     },
 
     deleteCategory: async (

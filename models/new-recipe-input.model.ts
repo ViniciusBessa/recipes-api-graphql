@@ -1,6 +1,9 @@
+import { IngredientInput } from "./ingredient-input.model";
+
 export interface NewRecipeInput {
   name: string;
   description: string;
-  ingredients: { ingredientId: number; quantity: number }[];
+  ingredients: IngredientInput[];
+  steps: { description: string }[];
   categoriesIds: number[];
 }

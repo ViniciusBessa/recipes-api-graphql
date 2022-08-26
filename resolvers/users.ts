@@ -13,7 +13,7 @@ const EMAIL_REGEX = /[A-Za-z0-9.]{1,}@[a-z0-9]{1,}\.com(\.[a-z]{1,})?/;
 async function getUsers(id?: number): Promise<User[]> {
   const users = await prisma.user.findMany({
     where: { id },
-    include: { recipes: true },
+    include: { recipes: true, reviews: true },
   });
   return users;
 }
@@ -33,7 +33,7 @@ async function createUser(input: NewUserInput): Promise<AuthInfo> {
   const hashedPassword: string = await generatePassword(password);
   const user = await prisma.user.create({
     data: { name, email, password: hashedPassword },
-    include: { recipes: true },
+    include: { recipes: true, reviews: true },
   });
 
   // Getting the user's jwt payload
@@ -52,7 +52,7 @@ async function updateUserName(newName: string, user: User) {
   const updatedUser = await prisma.user.update({
     data: { name: newName },
     where: { id: user.id },
-    include: { recipes: true },
+    include: { recipes: true, reviews: true },
   });
   return updatedUser;
 }
@@ -68,7 +68,7 @@ async function updateUserEmail(newEmail: string, user: User) {
   const updatedUser = await prisma.user.update({
     data: { email: newEmail },
     where: { id: user.id },
-    include: { recipes: true },
+    include: { recipes: true, reviews: true },
   });
   return updatedUser;
 }
@@ -93,7 +93,7 @@ async function updateUserPassword(
   const updatedUser = await prisma.user.update({
     data: { password: hashedPassword },
     where: { id: user.id },
-    include: { recipes: true },
+    include: { recipes: true, reviews: true },
   });
   return updatedUser;
 }
@@ -106,7 +106,7 @@ async function deleteUser(id: number, user: User): Promise<User> {
   }
   const deletedUser = await prisma.user.delete({
     where: { id },
-    include: { recipes: true },
+    include: { recipes: true, reviews: true },
   });
   return deletedUser;
 }
@@ -118,7 +118,10 @@ async function loginUser(input: LoginInput): Promise<AuthInfo> {
     throw new ApolloError(`Please provide a name or email`);
   }
   // Getting the user from the database
-  const user = await prisma.user.findFirst({ where: { name, email } });
+  const user = await prisma.user.findFirst({
+    where: { name, email },
+    include: { recipes: true, reviews: true },
+  });
 
   if (!user && name) {
     throw new ApolloError(`No user with the name ${name} was found`);

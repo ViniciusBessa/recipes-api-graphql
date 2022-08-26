@@ -17,6 +17,7 @@ model User {
   password  String
   role      Role     @default(USER)
   recipes   Recipe[]
+  reviews   Review[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -24,29 +25,19 @@ model User {
 }
 
 model Recipe {
-  id          Int                 @id @default(autoincrement())
-  name        String              @unique @db.VarChar(30)
-  description String              @db.VarChar(1000)
-  ingredients RecipeIngredients[]
+  id          Int                @id @default(autoincrement())
+  name        String             @unique @db.VarChar(30)
+  description String             @db.VarChar(1000)
+  ingredients Ingredient[]
+  steps       Step[]
+  reviews     Review[]
   categories  RecipeCategories[]
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@map("recipes")
-}
-
-model RecipeIngredients {
-  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId     Int
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
-  ingredientId Int
-  quantity     Int
-  assignedAt   DateTime   @default(now())
-
-  @@id([recipeId, ingredientId])
-  @@map("recipe_ingredients")
 }
 
 model RecipeCategories {
@@ -61,14 +52,41 @@ model RecipeCategories {
 }
 
 model Ingredient {
-  id        Int                 @id @default(autoincrement())
-  name      String              @unique @db.VarChar(30)
-  recipes   RecipeIngredients[]
-  weightKg  Decimal             @db.Decimal(6, 3)
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  id          Int      @id @default(autoincrement())
+  description String   @db.VarChar(100)
+  quantity    Int
+  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("ingredients")
+}
+
+model Step {
+  id          Int      @id @default(autoincrement())
+  description String   @db.VarChar(200)
+  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("steps")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(100)
+  text      String   @db.VarChar(600)
+  rating    Decimal  @db.Decimal(2, 1)
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId  Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reviews")
 }
 
 model Category {

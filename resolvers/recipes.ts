@@ -1,5 +1,5 @@
 import { PrismaClient, Recipe, User } from '@prisma/client';
-import { ApolloError, AuthenticationError } from 'apollo-server-express';
+import { ApolloError } from 'apollo-server-express';
 import { NewRecipeInput } from '../models/new-recipe-input.model';
 import { UpdateRecipeInput } from '../models/update-recipe-input.model';
 
@@ -11,7 +11,9 @@ async function getRecipes(id?: number): Promise<Recipe[]> {
     include: {
       user: true,
       categories: { include: { category: true } },
-      ingredients: { include: { ingredient: true } },
+      ingredients: true,
+      steps: true,
+      reviews: true,
     },
   });
   return recipes;
@@ -19,16 +21,12 @@ async function getRecipes(id?: number): Promise<Recipe[]> {
 
 async function createRecipe(
   input: NewRecipeInput,
-  user: User | null
+  user: User
 ): Promise<Recipe> {
-  let { name, description, categoriesIds, ingredients } = input;
+  let { name, description, ingredients, steps, categoriesIds } = input;
   name = name ? name.trim() : name;
+  description = description ? description.trim() : description;
 
-  if (!user) {
-    throw new AuthenticationError(
-      'You must be logged in to create a new recipe'
-    );
-  }
   if (!categoriesIds || categoriesIds.length == 0) {
     throw new ApolloError(
       'Please provide at least one category for the recipe'
@@ -39,9 +37,12 @@ async function createRecipe(
       'Please provide at least one ingredient for the recipe'
     );
   }
+  if (!steps || steps.length == 0) {
+    throw new ApolloError('Please provide at least one step for the recipe');
+  }
   if (!name || !description) {
     throw new ApolloError(
-      'Please, provide a name and description for the recipe'
+      'Please provide a name and description for the recipe'
     );
   }
   const recipe = await prisma.recipe.create({
@@ -54,17 +55,19 @@ async function createRecipe(
         })),
       },
       ingredients: {
-        create: ingredients.map((ingredientInfo) => ({
-          ingredient: { connect: { id: ingredientInfo.ingredientId } },
-          quantity: ingredientInfo.quantity,
-        })),
+        createMany: { data: ingredients },
+      },
+      steps: {
+        createMany: { data: steps },
       },
       user: { connect: { id: user.id } },
     },
     include: {
       user: true,
       categories: { include: { category: true } },
-      ingredients: { include: { ingredient: true } },
+      ingredients: true,
+      steps: true,
+      reviews: true,
     },
   });
   return recipe;
@@ -87,12 +90,28 @@ async function updateRecipe(
   const recipe = await prisma.recipe.update({
     where: { id },
     data: { name, description },
+    include: {
+      user: true,
+      categories: { include: { category: true } },
+      ingredients: true,
+      steps: true,
+      reviews: true,
+    },
   });
   return recipe;
 }
 
 async function deleteRecipe(id: number, user: User | null): Promise<Recipe> {
-  const recipe = await prisma.recipe.delete({ where: { id } });
+  const recipe = await prisma.recipe.delete({
+    where: { id },
+    include: {
+      user: true,
+      categories: { include: { category: true } },
+      ingredients: true,
+      steps: true,
+      reviews: true,
+    },
+  });
   return recipe;
 }
 
