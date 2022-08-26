@@ -5,10 +5,10 @@ const schema = gql`
 
   type Query {
     users(id: Int): [User!]!
-    recipes(id: Int): [Recipe!]!
-    ingredients(id: Int): [Ingredient!]!
-    steps(id: Int): [Step!]!
-    reviews(id: Int): [Review!]!
+    recipes(id: Int, userId: Int): [Recipe!]!
+    ingredients(id: Int, recipeId: Int): [Ingredient!]!
+    steps(id: Int, recipeId: Int): [Step!]!
+    reviews(id: Int, recipeId: Int, userId: Int): [Review!]!
     categories(id: Int): [Category!]!
   }
 
@@ -25,14 +25,14 @@ const schema = gql`
     createRecipe(input: NewRecipeInput!): Recipe!
     updateRecipe(id: Int!, newData: UpdateRecipeInput!): Recipe!
     deleteRecipe(id: Int!): Recipe!
-    addIngredient(recipeId: Int!, ingredient: NewIngredientInput!): Recipe!
-    addStep(recipeId: Int!, step: String!): Recipe!
 
     # Ingredients Mutations
+    createIngredient(recipeId: Int!, ingredientInput: NewIngredientInput!): Ingredient!
     updateIngredient(id: Int!, newData: UpdateIngredientInput!): Ingredient!
     deleteIngredient(id: Int!): Ingredient!
 
     # Steps Mutations
+    createStep(recipeId: Int!, description: String!): Step!
     updateStep(id: Int!, newDescription: String!): Step!
     deleteStep(id: Int!): Step!
 
@@ -53,6 +53,7 @@ const schema = gql`
     email: String!
     role: Role
     recipes: [Recipe!]!
+    reviews: [Review!]!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -74,6 +75,7 @@ const schema = gql`
     id: Int!
     description: String!
     quantity: Int!
+    recipe: Recipe!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -81,6 +83,7 @@ const schema = gql`
   type Category {
     id: Int!
     name: String!
+    recipes: [RecipeCategory!]!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -99,6 +102,7 @@ const schema = gql`
     text: String!
     rating: Float!
     recipe: Recipe!
+    user: User!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -109,8 +113,8 @@ const schema = gql`
   }
 
   type RecipeCategory {
+    recipe: Recipe!
     recipeId: Int!
-    quantity: Int!
     category: Category!
     categoryId: Int!
     assignedAt: DateTime!
@@ -146,13 +150,13 @@ const schema = gql`
     quantity: Int!
   }
 
-  input NewStepInput {
-    description: String!
-  }
-
   input UpdateIngredientInput {
     description: String
     quantity: Int
+  }
+
+  input NewStepInput {
+    description: String!
   }
 
   input NewReviewInput {

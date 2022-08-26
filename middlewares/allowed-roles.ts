@@ -1,7 +1,7 @@
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { ApolloError, AuthenticationError } from 'apollo-server-express';
 
-function allowedRoles(roles: string[], user: User | null): void {
+function allowedRoles(roles: Role[], user: User | null): void {
   if (!user) {
     throw new AuthenticationError(
       'You need to be logged in to access this resource'

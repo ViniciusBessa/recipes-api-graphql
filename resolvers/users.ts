@@ -2,7 +2,7 @@ import { PrismaClient, User } from '@prisma/client';
 import { ApolloError } from 'apollo-server-express';
 import { AuthInfo } from '../models/auth-info.model';
 import { LoginInput } from '../models/login-input.model';
-import { NewUserInput } from '../models/new-user-input.model';
+import { UserInput } from '../models/user-input.model';
 import { UserPayload } from '../models/user-payload.model';
 import { comparePassword, generatePassword } from '../utils/bcrypt';
 import { generateJWToken, getUserPayload } from '../utils/jwt';
@@ -13,12 +13,24 @@ const EMAIL_REGEX = /[A-Za-z0-9.]{1,}@[a-z0-9]{1,}\.com(\.[a-z]{1,})?/;
 async function getUsers(id?: number): Promise<User[]> {
   const users = await prisma.user.findMany({
     where: { id },
-    include: { recipes: true, reviews: true },
+    include: {
+      recipes: {
+        include: {
+          ingredients: true,
+          steps: true,
+          categories: {
+            include: { category: true },
+          },
+          reviews: { include: { recipe: true } },
+        },
+      },
+      reviews: { include: { recipe: true } },
+    },
   });
   return users;
 }
 
-async function createUser(input: NewUserInput): Promise<AuthInfo> {
+async function createUser(input: UserInput): Promise<AuthInfo> {
   let { name, email, password } = input;
   name = name ? name.trim() : name;
   email = email ? email.trim() : email;
@@ -33,7 +45,19 @@ async function createUser(input: NewUserInput): Promise<AuthInfo> {
   const hashedPassword: string = await generatePassword(password);
   const user = await prisma.user.create({
     data: { name, email, password: hashedPassword },
-    include: { recipes: true, reviews: true },
+    include: {
+      recipes: {
+        include: {
+          ingredients: true,
+          steps: true,
+          categories: {
+            include: { category: true },
+          },
+          reviews: { include: { recipe: true } },
+        },
+      },
+      reviews: { include: { recipe: true } },
+    },
   });
 
   // Getting the user's jwt payload
@@ -52,7 +76,19 @@ async function updateUserName(newName: string, user: User) {
   const updatedUser = await prisma.user.update({
     data: { name: newName },
     where: { id: user.id },
-    include: { recipes: true, reviews: true },
+    include: {
+      recipes: {
+        include: {
+          ingredients: true,
+          steps: true,
+          categories: {
+            include: { category: true },
+          },
+          reviews: { include: { recipe: true } },
+        },
+      },
+      reviews: { include: { recipe: true } },
+    },
   });
   return updatedUser;
 }
@@ -68,7 +104,19 @@ async function updateUserEmail(newEmail: string, user: User) {
   const updatedUser = await prisma.user.update({
     data: { email: newEmail },
     where: { id: user.id },
-    include: { recipes: true, reviews: true },
+    include: {
+      recipes: {
+        include: {
+          ingredients: true,
+          steps: true,
+          categories: {
+            include: { category: true },
+          },
+          reviews: { include: { recipe: true } },
+        },
+      },
+      reviews: { include: { recipe: true } },
+    },
   });
   return updatedUser;
 }
@@ -93,7 +141,19 @@ async function updateUserPassword(
   const updatedUser = await prisma.user.update({
     data: { password: hashedPassword },
     where: { id: user.id },
-    include: { recipes: true, reviews: true },
+    include: {
+      recipes: {
+        include: {
+          ingredients: true,
+          steps: true,
+          categories: {
+            include: { category: true },
+          },
+          reviews: { include: { recipe: true } },
+        },
+      },
+      reviews: { include: { recipe: true } },
+    },
   });
   return updatedUser;
 }
@@ -106,7 +166,19 @@ async function deleteUser(id: number, user: User): Promise<User> {
   }
   const deletedUser = await prisma.user.delete({
     where: { id },
-    include: { recipes: true, reviews: true },
+    include: {
+      recipes: {
+        include: {
+          ingredients: true,
+          steps: true,
+          categories: {
+            include: { category: true },
+          },
+          reviews: { include: { recipe: true } },
+        },
+      },
+      reviews: { include: { recipe: true } },
+    },
   });
   return deletedUser;
 }
@@ -120,7 +192,19 @@ async function loginUser(input: LoginInput): Promise<AuthInfo> {
   // Getting the user from the database
   const user = await prisma.user.findFirst({
     where: { name, email },
-    include: { recipes: true, reviews: true },
+    include: {
+      recipes: {
+        include: {
+          ingredients: true,
+          steps: true,
+          categories: {
+            include: { category: true },
+          },
+          reviews: { include: { recipe: true } },
+        },
+      },
+      reviews: { include: { recipe: true } },
+    },
   });
 
   if (!user && name) {

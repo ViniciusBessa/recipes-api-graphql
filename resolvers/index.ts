@@ -2,7 +2,6 @@ import { User } from '@prisma/client';
 import allowedRoles from '../middlewares/allowed-roles';
 import { LoginInput } from '../models/login-input.model';
 import { NewRecipeInput } from '../models/new-recipe-input.model';
-import { NewUserInput } from '../models/new-user-input.model';
 import { UpdateRecipeInput } from '../models/update-recipe-input.model';
 import { ReviewInput } from '../models/review-input.model';
 import {
@@ -12,6 +11,7 @@ import {
   updateCategory,
 } from './categories';
 import {
+  createIngredient,
   deleteIngredient,
   getIngredients,
   updateIngredient,
@@ -28,7 +28,7 @@ import {
   getReviews,
   updateReview,
 } from './reviews';
-import { deleteStep, getSteps, updateStep } from './steps';
+import { createStep, deleteStep, getSteps, updateStep } from './steps';
 import {
   getUsers,
   createUser,
@@ -39,6 +39,7 @@ import {
   updateUserPassword,
 } from './users';
 import { IngredientInput } from '../models/ingredient-input.model';
+import { UserInput } from '../models/user-input.model';
 
 interface Context {
   user: User | null;
@@ -48,14 +49,21 @@ const resolvers = {
   Query: {
     users: async (_parent: any, args: { id?: number }) => getUsers(args.id),
 
-    recipes: async (_parent: any, args: { id?: number }) => getRecipes(args.id),
+    recipes: async (_parent: any, args: { id?: number; userId?: number }) =>
+      getRecipes(args.id, args.userId),
 
-    ingredients: async (_parent: any, args: { id?: number }) =>
-      getIngredients(args.id),
+    ingredients: async (
+      _parent: any,
+      args: { id?: number; recipeId?: number }
+    ) => getIngredients(args.id, args.recipeId),
 
-    steps: async (_parent: any, args: { id?: number }) => getSteps(args.id),
+    steps: async (_parent: any, args: { id?: number; recipeId?: number }) =>
+      getSteps(args.id, args.recipeId),
 
-    reviews: async (_parent: any, args: { id?: number }) => getReviews(args.id),
+    reviews: async (
+      _parent: any,
+      args: { id?: number; recipeId?: number; userId?: number }
+    ) => getReviews(args.id, args.recipeId, args.userId),
 
     categories: async (_parent: any, args: { id?: number }) =>
       getCategories(args.id),
@@ -63,7 +71,7 @@ const resolvers = {
 
   Mutation: {
     // Users Mutations
-    createUser: async (_parent: any, args: { input: NewUserInput }) =>
+    createUser: async (_parent: any, args: { input: UserInput }) =>
       createUser(args.input),
 
     updateUserName: async (
@@ -110,28 +118,50 @@ const resolvers = {
       _parent: any,
       args: { input: NewRecipeInput },
       context: Context
-    ) => createRecipe(args.input, context.user!),
+    ) => {
+      allowedRoles(['COOK', 'ADMIN'], context.user);
+      return createRecipe(args.input, context.user!);
+    },
 
     updateRecipe: async (
       _parent: any,
       args: { id: number; newData: UpdateRecipeInput },
       context: Context
-    ) => updateRecipe(args.id, args.newData, context.user),
+    ) => {
+      allowedRoles(['COOK', 'ADMIN'], context.user);
+      return updateRecipe(args.id, args.newData, context.user!);
+    },
 
     deleteRecipe: async (
       _parent: any,
       args: { id: number },
       context: Context
-    ) => deleteRecipe(args.id, context.user),
+    ) => {
+      allowedRoles(['COOK', 'ADMIN'], context.user);
+      return deleteRecipe(args.id, context.user!);
+    },
 
     // Ingredients Mutations
+    createIngredient: async (
+      _parent: any,
+      args: { recipeId: number; ingredientInput: IngredientInput },
+      context: Context
+    ) => {
+      allowedRoles(['COOK', 'ADMIN'], context.user);
+      return createIngredient(
+        args.recipeId,
+        args.ingredientInput,
+        context.user!
+      );
+    },
+
     updateIngredient: async (
       _parent: any,
       args: { id: number; newData: IngredientInput },
       context: Context
     ) => {
       allowedRoles(['COOK', 'ADMIN'], context.user);
-      return updateIngredient(args.id, args.newData);
+      return updateIngredient(args.id, args.newData, context.user!);
     },
 
     deleteIngredient: async (
@@ -140,17 +170,26 @@ const resolvers = {
       context: Context
     ) => {
       allowedRoles(['COOK', 'ADMIN'], context.user);
-      return deleteIngredient(args.id);
+      return deleteIngredient(args.id, context.user!);
     },
 
     // Steps Mutations
-    updateStep: async (
+    createStep: async (
       _parent: any,
-      args: { id: number; description: string },
+      args: { recipeId: number; description: string },
       context: Context
     ) => {
       allowedRoles(['COOK', 'ADMIN'], context.user);
-      return updateStep(args.id, args.description);
+      return createStep(args.recipeId, args.description, context.user!);
+    },
+
+    updateStep: async (
+      _parent: any,
+      args: { id: number; newDescription: string },
+      context: Context
+    ) => {
+      allowedRoles(['COOK', 'ADMIN'], context.user);
+      return updateStep(args.id, args.newDescription, context.user!);
     },
 
     deleteStep: async (
@@ -159,7 +198,7 @@ const resolvers = {
       context: Context
     ) => {
       allowedRoles(['COOK', 'ADMIN'], context.user);
-      return deleteStep(args.id);
+      return deleteStep(args.id, context.user!);
     },
 
     // Reviews Mutations
@@ -174,11 +213,11 @@ const resolvers = {
 
     updateReview: async (
       _parent: any,
-      args: { id: number; review: ReviewInput },
+      args: { id: number; newData: ReviewInput },
       context: Context
     ) => {
       allowedRoles(['USER', 'COOK', 'ADMIN'], context.user);
-      return updateReview(args.id, args.review);
+      return updateReview(args.id, args.newData, context.user!);
     },
 
     deleteReview: async (
@@ -187,7 +226,7 @@ const resolvers = {
       context: Context
     ) => {
       allowedRoles(['USER', 'COOK', 'ADMIN'], context.user);
-      return deleteReview(args.id);
+      return deleteReview(args.id, context.user!);
     },
 
     // Categories Mutations

@@ -5,15 +5,15 @@ import { UpdateRecipeInput } from '../models/update-recipe-input.model';
 
 const prisma = new PrismaClient();
 
-async function getRecipes(id?: number): Promise<Recipe[]> {
+async function getRecipes(id?: number, userId?: number): Promise<Recipe[]> {
   const recipes = await prisma.recipe.findMany({
-    where: { id },
+    where: { id, userId },
     include: {
       user: true,
       categories: { include: { category: true } },
       ingredients: true,
       steps: true,
-      reviews: true,
+      reviews: { include: { user: true } },
     },
   });
   return recipes;
@@ -67,7 +67,7 @@ async function createRecipe(
       categories: { include: { category: true } },
       ingredients: true,
       steps: true,
-      reviews: true,
+      reviews: { include: { user: true } },
     },
   });
   return recipe;
@@ -76,18 +76,32 @@ async function createRecipe(
 async function updateRecipe(
   id: number,
   newData: UpdateRecipeInput,
-  user: User | null
+  user: User
 ): Promise<Recipe> {
   let { name, description } = newData;
   name = name ? name.trim() : name;
   description = description ? description.trim() : description;
 
-  if (!name || !description) {
+  if (!name && !description) {
     throw new ApolloError(
       'Please, provide a name or a description to update the recipe'
     );
   }
-  const recipe = await prisma.recipe.update({
+  const recipe = await prisma.recipe.findFirst({
+    where: { id },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!recipe) {
+    throw new ApolloError(`No recipe with the ID ${id} was found`);
+  } else if (recipe.userId !== user.id && user.role !== 'ADMIN') {
+    throw new ApolloError(
+      "You don't have the permission to update this recipe"
+    );
+  }
+  const updatedRecipe = await prisma.recipe.update({
     where: { id },
     data: { name, description },
     include: {
@@ -95,22 +109,33 @@ async function updateRecipe(
       categories: { include: { category: true } },
       ingredients: true,
       steps: true,
-      reviews: true,
+      reviews: { include: { user: true } },
     },
   });
-  return recipe;
+  return updatedRecipe;
 }
 
-async function deleteRecipe(id: number, user: User | null): Promise<Recipe> {
-  const recipe = await prisma.recipe.delete({
+async function deleteRecipe(id: number, user: User): Promise<Recipe> {
+  const recipe = await prisma.recipe.findFirst({
     where: { id },
     include: {
       user: true,
       categories: { include: { category: true } },
       ingredients: true,
       steps: true,
-      reviews: true,
+      reviews: { include: { user: true } },
     },
+  });
+
+  if (!recipe) {
+    throw new ApolloError(`No recipe with the ID ${id} was found`);
+  } else if (recipe.userId !== user.id && user.role !== 'ADMIN') {
+    throw new ApolloError(
+      "You don't have the permission to delete this recipe"
+    );
+  }
+  await prisma.recipe.delete({
+    where: { id },
   });
   return recipe;
 }
