@@ -7,18 +7,24 @@ const prisma = new PrismaClient();
 async function authenticationMiddleware(
   req: Request
 ): Promise<{ user: User | null }> {
-  const token = req.headers.authorization;
+  try {
+    const token = req.headers.authorization;
 
-  if (!token) {
+    // If the user doesn't provide a token, set user as null
+    if (!token) {
+      return { user: null };
+    }
+    const userPayload = verifyJWToken(token);
+    const user = await prisma.user.findFirst({ where: { id: userPayload.id } });
+
+    // If the user wasn't found in the database, set user as null
+    if (!user) {
+      return { user: null };
+    }
+    return { user };
+  } catch {
     return { user: null };
   }
-  const userPayload = verifyJWToken(token);
-  const user = await prisma.user.findFirst({ where: { id: userPayload.id } });
-
-  if (!user) {
-    return { user: null };
-  }
-  return { user };
 }
 
 export default authenticationMiddleware;

@@ -4,7 +4,8 @@
   "description": "Uma API que disponibiliza receitas, ingredients, usuários, categorias e mais. Essa API se baseia em GraphQL, feita em Express com Apollo Server e Prisma.",
   "main": "server.ts",
   "scripts": {
-    "test": "npm test",
+    "db": "prisma migrate reset --force",
+    "test": "npm run db && jest",
     "dev": "tsnd server.ts"
   },
   "repository": {
@@ -39,9 +40,17 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.13",
+    "@types/jest": "^28.1.8",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/node": "^18.7.13",
+    "@types/supertest": "^2.0.12",
+    "jest": "^29.0.1",
     "prisma": "^4.2.1",
+    "supertest": "^6.2.4",
+    "ts-jest": "^28.0.8",
     "ts-node-dev": "^2.0.0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

@@ -1,12 +1,11 @@
 import { ApolloServer } from 'apollo-server-express';
 import { DocumentNode } from 'graphql';
 import express, { Express } from 'express';
-import { createServer } from 'http';
+import { createServer, Server } from 'http';
 import {
   ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageLocalDefault,
 } from 'apollo-server-core';
-import { Server } from 'http';
 import authenticationMiddleware from './middlewares/authentication';
 
 async function startServer(

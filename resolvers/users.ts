@@ -73,6 +73,10 @@ async function createUser(input: UserInput): Promise<AuthInfo> {
 
 async function updateUserName(newName: string, user: User) {
   newName = newName.trim();
+
+  if (!newName) {
+    throw new ApolloError('Please provide the new name');
+  }
   const updatedUser = await prisma.user.update({
     data: { name: newName },
     where: { id: user.id },
@@ -184,10 +188,15 @@ async function deleteUser(id: number, user: User): Promise<User> {
 }
 
 async function loginUser(input: LoginInput): Promise<AuthInfo> {
-  const { name, email, password } = input;
+  let { name, email, password } = input;
+  name = name ? name.trim() : name;
+  email = email ? email.trim() : email;
+  password = password ? password.trim() : password;
 
   if (!name && !email) {
     throw new ApolloError(`Please provide a name or email`);
+  } else if (!password) {
+    throw new ApolloError(`Please provide a password`);
   }
   // Getting the user from the database
   const user = await prisma.user.findFirst({
