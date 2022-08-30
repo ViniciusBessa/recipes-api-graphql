@@ -122,8 +122,8 @@ describe('Categories Mutations', () => {
         .set({ Authorization: adminToken });
       expect(response.body.data).toBeTruthy();
       expect(response.body.errors).toBeFalsy();
-      expect(response.body.data!.updateCategory.id).toEqual(4);
-      expect(response.body.data!.updateCategory.name).toEqual(
+      expect(response.body.data.updateCategory.id).toEqual(4);
+      expect(response.body.data.updateCategory.name).toEqual(
         'Italian Dessert'
       );
     });
@@ -154,8 +154,8 @@ describe('Categories Mutations', () => {
         .set({ Authorization: adminToken });
       expect(response.body.data).toBeTruthy();
       expect(response.body.errors).toBeFalsy();
-      expect(response.body.data!.deleteCategory.id).toEqual(5);
-      expect(response.body.data!.deleteCategory.name).toEqual('Spanish');
+      expect(response.body.data.deleteCategory.id).toEqual(5);
+      expect(response.body.data.deleteCategory.name).toEqual('Spanish');
     });
   });
 
@@ -168,16 +168,16 @@ describe('Categories Mutations', () => {
       const response = await request(server).post('/graphql').send(queryData);
       expect(response.body.data).toBeTruthy();
       expect(response.body.errors).toBeFalsy();
-      expect(response.body.data!.categories.length).toBeGreaterThanOrEqual(4);
-      expect(response.body.data!.categories[0].id).toBeTruthy();
-      expect(response.body.data!.categories[0].name).toBeTruthy();
-      expect(response.body.data!.categories[0].createdAt).toBeTruthy();
-      expect(response.body.data!.categories[0].updatedAt).toBeTruthy();
+      expect(response.body.data.categories.length).toBeGreaterThanOrEqual(4);
+      expect(response.body.data.categories[0].id).toBeTruthy();
+      expect(response.body.data.categories[0].name).toBeTruthy();
+      expect(response.body.data.categories[0].createdAt).toBeTruthy();
+      expect(response.body.data.categories[0].updatedAt).toBeTruthy();
       expect(
-        response.body.data!.categories[0].recipes[0].recipe.id
+        response.body.data.categories[0].recipes[0].recipe.id
       ).toBeTruthy();
       expect(
-        response.body.data!.categories[0].recipes[0].recipe.name
+        response.body.data.categories[0].recipes[0].recipe.name
       ).toBeTruthy();
     });
 
@@ -190,16 +190,16 @@ describe('Categories Mutations', () => {
       const response = await request(server).post('/graphql').send(queryData);
       expect(response.body.data).toBeTruthy();
       expect(response.body.errors).toBeFalsy();
-      expect(response.body.data!.categories.length).toEqual(1);
-      expect(response.body.data!.categories[0].id).toEqual(2);
-      expect(response.body.data!.categories[0].name).toEqual('Dessert');
-      expect(response.body.data!.categories[0].createdAt).toBeTruthy();
-      expect(response.body.data!.categories[0].updatedAt).toBeTruthy();
+      expect(response.body.data.categories.length).toEqual(1);
+      expect(response.body.data.categories[0].id).toEqual(2);
+      expect(response.body.data.categories[0].name).toEqual('Dessert');
+      expect(response.body.data.categories[0].createdAt).toBeTruthy();
+      expect(response.body.data.categories[0].updatedAt).toBeTruthy();
       expect(
-        response.body.data!.categories[0].recipes[0].recipe.id
+        response.body.data.categories[0].recipes[0].recipe.id
       ).toBeTruthy();
       expect(
-        response.body.data!.categories[0].recipes[0].recipe.name
+        response.body.data.categories[0].recipes[0].recipe.name
       ).toBeTruthy();
     });
 

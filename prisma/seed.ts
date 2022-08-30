@@ -92,7 +92,7 @@ async function main() {
         createMany: {
           data: [
             { description: '200g of chocolate chips', quantity: 1 },
-            { description: '2 cups of sugar', quantity: 1 },
+            { description: 'Cup of sugar', quantity: 2 },
           ],
         },
       },
@@ -102,6 +102,7 @@ async function main() {
             { description: 'Preheat the oven to 380° F' },
             { description: 'Add the chocolate chips and the cups of sugar' },
             { description: 'Bake for 40 minutes' },
+            { description: 'Add any toppings you want' },
           ],
         },
       },
@@ -170,6 +171,95 @@ async function main() {
     },
   });
 
+  const vanillaPudding = await prisma.recipe.create({
+    data: {
+      name: 'Vanilla Pudding',
+      description: 'A vanilla pudding recipe',
+      categories: {
+        create: { category: { connect: { id: dessertCategory.id } } },
+      },
+      ingredients: {
+        createMany: {
+          data: [
+            { description: '1/3 cup of sugar', quantity: 1 },
+            { description: 'Cup of milk', quantity: 3 },
+            { description: 'Egg', quantity: 3 },
+          ],
+        },
+      },
+      steps: {
+        createMany: {
+          data: [
+            { description: 'Mix the ingredients' },
+            { description: 'Bake for 40 minutes' },
+          ],
+        },
+      },
+      user: { connect: { id: ulrik.id } },
+    },
+  });
+
+  const petitGateau = await prisma.recipe.create({
+    data: {
+      name: 'Petit Gateau',
+      description: 'A petit gateau recipe',
+      categories: {
+        createMany: {
+          data: [
+            { categoryId: dessertCategory.id },
+            { categoryId: frenchCategory.id },
+          ],
+        },
+      },
+      ingredients: {
+        createMany: {
+          data: [
+            { description: 'Tablespoon of sugar', quantity: 3 },
+            { description: 'Stick butter', quantity: 2 },
+            { description: 'Egg', quantity: 4 },
+          ],
+        },
+      },
+      steps: {
+        createMany: {
+          data: [
+            { description: 'Mix the ingredients' },
+            { description: 'Bake for 35 minutes' },
+          ],
+        },
+      },
+      user: { connect: { id: ulrik.id } },
+    },
+  });
+
+  const friedRice = await prisma.recipe.create({
+    data: {
+      name: 'Fried Rice',
+      description: 'A fried rice recipe',
+      categories: {
+        create: { category: { connect: { id: chineseCategory.id } } },
+      },
+      ingredients: {
+        createMany: {
+          data: [
+            { description: 'Onion', quantity: 1 },
+            { description: '5g of salt', quantity: 3 },
+            { description: '200g of rice', quantity: 2 },
+          ],
+        },
+      },
+      steps: {
+        createMany: {
+          data: [
+            { description: 'Mix the ingredients' },
+            { description: 'Bake for 20 minutes' },
+          ],
+        },
+      },
+      user: { connect: { id: ulrik.id } },
+    },
+  });
+
   // Reviews
   await prisma.review.create({
     data: {
@@ -197,6 +287,26 @@ async function main() {
       text: "This recipe doesn't make any sense",
       rating: 1,
       recipe: { connect: { id: frenchCrepes.id } },
+      user: { connect: { id: ulrik.id } },
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      title: 'Good recipe!',
+      text: 'Delicious chocolate cake',
+      rating: 5,
+      recipe: { connect: { id: chocolateCake.id } },
+      user: { connect: { id: taqqiq.id } },
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      title: 'This recipe is amazaing',
+      text: 'This is the best chocolate cake recipe available',
+      rating: 5,
+      recipe: { connect: { id: chocolateCake.id } },
       user: { connect: { id: ulrik.id } },
     },
   });
