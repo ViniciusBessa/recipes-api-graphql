@@ -6,7 +6,7 @@ import resolvers from './resolvers';
 
 dotenv.config();
 
-const port = process.env.PORT as string;
+const port = process.env.PORT as string || 5000;
 
 async function startServer() {
   const prisma = new PrismaClient();
